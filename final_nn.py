@@ -1,13 +1,9 @@
-import pandas as pd
 import numpy as np
 import os
 import tensorflow as tf
-import cv2
 from tensorflow import keras
 from  matplotlib import pyplot as plt
 import matplotlib.image as mpimg
-import random
-from PIL import Image
 
 IMG_SIZE=264
 BACH_SIZE = 32
