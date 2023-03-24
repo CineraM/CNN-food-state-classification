@@ -1,15 +1,22 @@
-import numpy as np
-import os
+"""
+Matias Cinera - U 6931_8506
+CIS-6619
+Instructor: Yu Sun
+Ta:         Sadman Sakib
+Assigment:  Project 1 - Part 2
+Food State Classification - NN Model & Trainning 
+Note: Assuming code is running locally - NOT COLAB
+"""
 import tensorflow as tf
-from tensorflow import keras
 from  matplotlib import pyplot as plt
-import matplotlib.image as mpimg
 
 IMG_SIZE=264
 BACH_SIZE = 32
 train_img_folder = '/home/matias/Documents/nn/train'
 validation_img_folder = '/home/matias/Documents/nn/valid'
 
+# created train & valid ds based on:
+# https://www.tensorflow.org/tutorials/images/classification
 train_ds = tf.keras.utils.image_dataset_from_directory(
     train_img_folder,
     validation_split=0,
@@ -24,17 +31,11 @@ valid_ds = tf.keras.utils.image_dataset_from_directory(
     image_size=(IMG_SIZE, IMG_SIZE)
 )
 
-
-# normalization_layer = tf.keras.layers.Rescaling(1./255)
-# normalized_train_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
-
-# normalization_layer = tf.keras.layers.Rescaling(1./255)
-# normalized_valid_ds = valid_ds.map(lambda x, y: (normalization_layer(x), y))
-
-# valid_ds = valid_ds.map(lambda x,y: (x/255, y))
-
-# Model
+# Model definition
+# Partially based on Md Sadman Sakib NN
+# https://arxiv.org/abs/2103.02305 ^
 model=tf.keras.Sequential([        
+    # normalizing the input
     tf.keras.layers.Rescaling(1./255, input_shape=(IMG_SIZE, IMG_SIZE, 3)),
     
     tf.keras.layers.Conv2D(filters=16, kernel_size=(3, 3), activation='relu', input_shape=(IMG_SIZE, IMG_SIZE, 3)),
@@ -75,16 +76,13 @@ model.compile(
     metrics=['accuracy'],
 )
 
-
-# print("XDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
-# train, epochs=20, validation_data=val
 history = model.fit(
     train_ds,
     validation_data = valid_ds,
     epochs=80,
     batch_size = BACH_SIZE,  # 32, 64 128, 256, 512 --> lower if more memory is needed
 )
-# Saving model & data
+# Saving model
 filename = '/home/matias/Documents/nn/project1_part2.tf'
 model.save(filename)
 
@@ -94,6 +92,6 @@ plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'valid'], loc='upper left')
-plt.show()
+plt.savefig('training_&_validation_graph.png')
 
 model.evaluate(valid_ds, batch_size=64)
