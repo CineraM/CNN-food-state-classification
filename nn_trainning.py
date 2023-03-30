@@ -3,7 +3,7 @@ Matias Cinera - U 6931_8506
 CIS-6619
 Instructor: Yu Sun
 Ta:         Sadman Sakib
-Assigment:  Project 1 - Part 2
+Assigment:  Project 1 - Part 3
 Food State Classification - NN Model & Trainning 
 Note: Assuming code is running locally - NOT COLAB
 """
@@ -32,19 +32,20 @@ valid_ds = tf.keras.utils.image_dataset_from_directory(
     image_size=(IMG_SIZE, IMG_SIZE)
 )
 
-resnet = tf.keras.applications.resnet50.ResNet50(
-    input_shape=(IMG_SIZE, IMG_SIZE, 3),
-    include_top=False,
-    weights='imagenet')
-for layer in resnet.layers:
-    layer.trainable = False
-
+# inception & resnet require too much memory too add to the current network
 inception = tf.keras.applications.inception_v3.InceptionV3(
     include_top=False,
     weights='imagenet',
     input_shape=(IMG_SIZE, IMG_SIZE,3),
 )
 inception.trainable = False
+
+resnet = tf.keras.applications.resnet50.ResNet50(
+    input_shape=(IMG_SIZE, IMG_SIZE, 3),
+    include_top=False,
+    weights='imagenet')
+for layer in resnet.layers:
+    layer.trainable = False
 
 # Model definition  
 # Partially based on Md Sadman Sakib NN
@@ -54,9 +55,6 @@ model=tf.keras.Sequential([
     tf.keras.layers.Rescaling(1./255, input_shape=(IMG_SIZE, IMG_SIZE, 3)),
     tf.keras.layers.RandomFlip("horizontal_and_vertical"),
     tf.keras.layers.RandomRotation(0.2),
-
-    # resnet, 
-    # inception,
 
     tf.keras.layers.Conv2D(filters=16, kernel_size=(3, 3), activation='relu', input_shape=(IMG_SIZE, IMG_SIZE, 3)),
     tf.keras.layers.BatchNormalization(),
@@ -116,7 +114,7 @@ history = model.fit(
 )
 # Saving model
 model.load_weights(checkpoint_filepath)
-filename = '/home/matias/Documents/nn/project1_part2.tf'
+filename = '/home/matias/Documents/nn/project1_part3.tf'
 model.save(filename)
 
 plt.plot(history.history['accuracy'])

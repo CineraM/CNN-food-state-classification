@@ -3,8 +3,8 @@ Matias Cinera - U 6931_8506
 CIS-6619
 Instructor: Yu Sun
 Ta:         Sadman Sakib
-Assigment:  Project 1 - Part 2
-Food State Classification - NN Model & Trainning 
+Assigment:  Project 1 - Part 3
+Food State Classification - Inceptionv3 Model & Trainning 
 Note: Assuming code is running locally - NOT COLAB
 """
 import tensorflow as tf
@@ -31,27 +31,28 @@ valid_ds = tf.keras.utils.image_dataset_from_directory(
     batch_size = BACH_SIZE,
     image_size=(IMG_SIZE, IMG_SIZE)
 )
-# https://github.com/feitgemel/TensorFlowProjects/blob/master/transfer-learning/Resnet50-CarDetection/TransferLearn-01-BuildTheModel.py
-# based of
-## resnet model ##
-base_model = tf.keras.applications.resnet50.ResNet50(
-    input_shape=(IMG_SIZE, IMG_SIZE, 3),
+
+# https://www.kaggle.com/code/kmader/transfer-learning-with-inceptionv3
+# based of^
+## inception code ##
+base_model = tf.keras.applications.inception_v3.InceptionV3(
     include_top=False,
-    weights='imagenet')
+    weights='imagenet',
+    input_shape=(IMG_SIZE, IMG_SIZE,3),
+)
 
-for layer in base_model.layers:
-    layer.trainable = False
+base_model.trainable = False
+add_model = tf.keras.Sequential()
+add_model.add(tf.keras.layers.Rescaling(1./255, input_shape=(IMG_SIZE, IMG_SIZE, 3)))
+add_model.add(base_model)
+add_model.add(tf.keras.layers.GlobalAveragePooling2D())
+add_model.add(tf.keras.layers.Dropout(0.5))
+add_model.add(tf.keras.layers.Dense(11, activation='softmax'))
 
-PlusFlattenlayer = tf.keras.layers.Flatten()(base_model.output)
-prediction = tf.keras.layers.Dense(11, activation='softmax')(PlusFlattenlayer)
-model = tf.keras.models.Model(inputs=base_model.input , outputs=prediction)
 
-
-model.compile(
-    loss = 'categorical_crossentropy',
-    optimizer='adam',
-    metrics=['accuracy'])
-
+model = add_model
+model.compile(loss='categorical_crossentropy', 
+              optimizer=tf.keras.optimizers.SGD(lr=1e-4, momentum=0.9), metrics=['accuracy'])
 
 checkpoint_filepath = '/home/matias/GitHub/food-state-classification/model_weights'
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
@@ -70,13 +71,13 @@ model.compile(
 history = model.fit(
     train_ds,
     validation_data = valid_ds,
-    epochs=10,
+    epochs=25,
     callbacks=[model_checkpoint_callback]
 )
 
 # Saving model
 model.load_weights(checkpoint_filepath)
-filename = '/home/matias/Documents/GitHub/food-state-classification/project1_part2_resnet.tf'
+filename = '/home/matias/Documents/GitHub/food-state-classification/project1_part3_inception.tf'
 model.save(filename)
 
 plt.plot(history.history['accuracy'])
@@ -85,4 +86,4 @@ plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'valid'], loc='upper left')
-plt.savefig('training_&_validation_graph_resnet.png')
+plt.savefig('training_&_validation_graph_inception.png')
