@@ -1,0 +1,2 @@
+model_checkpoint_path: "project1_part2_inception_weights"
+all_model_checkpoint_paths: "project1_part2_inception_weights"
